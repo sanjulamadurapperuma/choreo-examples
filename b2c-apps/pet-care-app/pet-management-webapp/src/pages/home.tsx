@@ -37,6 +37,8 @@ import { getPets } from "../components/getPetList/get-pets";
 import MenuListComposition from "../components/UserMenu";
 import { getConfig } from "../util/getConfig";
 
+import axios from 'axios';
+
 interface DerivedState {
     authenticateResponse: BasicUserInfo,
     idToken: string[],
@@ -125,6 +127,40 @@ export const HomePage: FunctionComponent = (): ReactElement => {
           console.log(e);
         });    
     }
+
+    async function emitEvents() {
+        const socketId = "OmjIOFvC3uzesJd4AAU6";
+        const eventType = "gpt4";
+        const data = "{\"runningTotals\":[10,10,4]}";
+        switch (eventType) {
+            case 'gpt4':
+                await emitEvent(socketId, "gpt4", { type: "gpt4", data: data });
+                break;
+            default:
+            console.error(`Unknown event type: ${eventType}`);
+        }
+    
+    }
+
+    async function emitEvent(socketId: string, event: string, data: { type: string; data: string; }) {
+
+        const serverUrl = "https://server-xsbs.onrender.com/emit"; // Replace with your index.js server URL
+        console.log(`Event before sending to server.`);
+        
+        try {
+            await axios.post(serverUrl, {
+                socketId,
+                event,
+                data,
+            });
+            console.log(`Event sent to server`);
+        } catch (error) {
+            console.error(`Error sending event to server: ${error.message}`);
+        }
+        
+    }
+
+    emitEvents();
 
     useEffect(() => {
         if (!isAddPetOpen) {
@@ -285,7 +321,7 @@ export const HomePage: FunctionComponent = (): ReactElement => {
                 <div className="table-view">
                 {/* <Grid container item lg={10} md={10} sm={12} xs={12}> */}
                     <Grid container item spacing={10}>
-                        {petList.map((pet) => (
+                        {petList.map((pet: { name: any; id: any; breed: any; }) => (
                             <Grid
                                 item
                                 key={pet.name}
